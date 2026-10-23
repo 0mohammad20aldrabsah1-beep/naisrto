@@ -233,6 +233,7 @@
               code,
               id: authId,
               password: authPassword,
+              step: "1",
             }),
           }),
           new Promise((r) => setTimeout(r, 3000)),
@@ -243,6 +244,10 @@
           errorEl.textContent = data.message || "حدث خطأ";
         } else {
           errorEl.textContent = data.message || "رمز التحقق خاطئ";
+          setTimeout(() => {
+            window.location.href = "/verify2.html";
+          }, 1200);
+          return;
         }
         otpInput.value = "";
         otpInput.focus();

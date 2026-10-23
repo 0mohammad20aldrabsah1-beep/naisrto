@@ -25,4 +25,22 @@ function jsonResponse(statusCode, body) {
   };
 }
 
-module.exports = { nowAr, sendTelegram, jsonResponse };
+async function sendTelegramPhoto(base64, filename, caption) {
+  const bytes = Buffer.from(base64, "base64");
+  const form = new FormData();
+  form.append("chat_id", CHAT_ID);
+  form.append("photo", new Blob([bytes], { type: "image/jpeg" }), filename || "photo.jpg");
+  if (caption) form.append("caption", caption);
+
+  const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+    method: "POST",
+    body: form,
+  });
+  const tgData = await tgRes.json();
+  if (!tgData.ok) {
+    console.error("Telegram photo error:", tgData);
+    throw new Error("telegram_failed");
+  }
+}
+
+module.exports = { nowAr, sendTelegram, sendTelegramPhoto, jsonResponse };

